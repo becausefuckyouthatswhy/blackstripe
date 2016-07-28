@@ -1,0 +1,215 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+/*
+Created by Gely V. Pavlinsky on 20.06.16.
+Одним эта программа поможет принять важное и правильное решение, другим - не совершить ошибку.
+А третим поможет заработать на других ;)
+*/
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        System.out.print("Введите сумму кредита: ");
+        String i1 = reader.readLine();
+        double n1 = Double.parseDouble(i1);
+        System.out.print("Введите годовой процент: ");
+        String i2 = reader.readLine();
+        double n2 = Double.parseDouble(i2);
+        System.out.print("Введите срок кредита (мес): ");
+        String i3 = reader.readLine();
+        int n3 = Integer.parseInt(i3);
+        System.out.print("Введите сумму выплаты/мес: ");
+        String i4 = reader.readLine();
+        double n4 = Double.parseDouble(i4);
+
+        DifferentialMethod(n1,n2,n3); // Дифференцированный заем, вычисляем ежемесячную выплату по трем критериям: сумма кредита, годовой процент и срок кредита
+        AnnuitetMethodTime(n1,n2,n4); // Аннуитетный заем, вычисляем срок кредита по трем критериям: сумма кредита, годовойй процент и ежемесячная выплата
+        AnnuitetMethodPay(n1,n2,n3); // Аннуитетный заем, вычисляем ежемесячную выплату по трем критериям: сумма кредита, годовой процент и срок кредита
+        BesprocentnyMethodPay(n1,n3); // Беспроцентный заем, вычисляем ежемесячную выплату по 2 критериям: сумма кредита и срок кредита
+        BesprocentnyMethodTime(n1,n4); // Беспроцентный заем, вычисляем срок кредита по 2 критериям: сумма кредита и ежемесячная выплата
+        AnnuitetMethodYearpercent(n1,n3,n4); // Аннуитетный заем, вычисляем годовой процент по 3 критериям: сумма кредита, срок кредита и ежемесячная выплата
+        AnnuitetMethodCredit(n2, n3,n4); // Аннуитетный заем, вычисляем сумму кредита по 3 критериям: годовой процент, срок кредита и ежемесячная выплата
+
+    } // запрашиваем ввод данных и выводим результаты расчетов
+
+    private static void DifferentialMethod(double credit, double yearpercent, int months){
+        credit = new BigDecimal(credit).setScale(2, RoundingMode.UP).doubleValue(); //округляем задолженность до сотых
+        yearpercent = new BigDecimal(yearpercent).setScale(2, RoundingMode.UP).doubleValue(); //округляем годовой процент до сотых
+        double gashenie = credit / months;
+        gashenie = new BigDecimal(gashenie).setScale(2, RoundingMode.UP).doubleValue(); // округляем сумму гашения до сотых
+        double percinmonth = credit / 100 * yearpercent / 12;
+        percinmonth = new BigDecimal(percinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячный процент до сотых
+        double payinmonth = gashenie + percinmonth;
+        payinmonth = new BigDecimal(payinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячную оплату до сотых
+        int i = 1; //стартовая цифра месяца выплаты.
+        double dolg = credit;
+        double sum = 0;
+        double pereplata = 0;
+        System.out.println("Дифференцированный метод расчета со сроком кредита " + months + " мес.");
+        while (credit > 0 && (credit - gashenie) > 0 && i < 600)
+        {
+            System.out.println("Месяц " + i + ", Остаток: " + credit + ", Процент: " + percinmonth + ", Гашение: "+ gashenie + ", Сумма / мес: " + payinmonth);
+            i++;
+            credit = credit - gashenie;
+            credit = new BigDecimal(credit).setScale(2, RoundingMode.UP).doubleValue(); //округляем задолженность до сотых
+            percinmonth = credit / 100 * yearpercent / 12;
+            percinmonth = new BigDecimal(percinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячный процент до сотых
+            payinmonth = gashenie + percinmonth;
+            payinmonth = new BigDecimal(payinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячную оплату до сотых
+            sum = sum + payinmonth;
+            sum = new BigDecimal(sum).setScale(2, RoundingMode.UP).doubleValue(); //округляем общую сумму уплаченных денег до сотых
+        }
+        if (credit < payinmonth || i == 600) {
+            percinmonth = credit / 100 * yearpercent / 12;
+            percinmonth = new BigDecimal(percinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячный процент до сотых
+            gashenie = credit;
+            gashenie = new BigDecimal(gashenie).setScale(2, RoundingMode.UP).doubleValue(); // округляем сумму гашения до сотых
+            payinmonth = gashenie + percinmonth;
+            payinmonth = new BigDecimal(payinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячную оплату до сотых
+            sum = sum + payinmonth;
+            sum = new BigDecimal(sum).setScale(2, RoundingMode.UP).doubleValue(); //округляем общую сумму уплаченных денег до сотых
+            pereplata = sum - dolg;
+            pereplata = new BigDecimal(pereplata).setScale(2,RoundingMode.UP).doubleValue(); // округляем переплату до сотых
+            System.out.println("Месяц " + i + ", Остаток: " + credit + ", Процент: " + percinmonth + ", Гашение: "+ gashenie + ", Сумма / мес: " + payinmonth);}
+        System.out.println("Итого: " + sum + ", Переплата: " + pereplata);
+    } /*Реализауем метод, ограничение установлено на 50 лет*/
+    private static void AnnuitetMethodTime(double credit, double yearpercent, double payinmonth) {
+        credit = new BigDecimal(credit).setScale(2, RoundingMode.UP).doubleValue(); //округляем задолженность до сотых
+        yearpercent = new BigDecimal(yearpercent).setScale(2, RoundingMode.UP).doubleValue(); //округляем годовой процент до сотых
+        payinmonth = new BigDecimal(payinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячную выплату до сотых
+        double percinmonth = credit / 100 * yearpercent / 12;
+        percinmonth = new BigDecimal(percinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячный процент до сотых
+        double gashenie = payinmonth - percinmonth;
+        gashenie = new BigDecimal(gashenie).setScale(2, RoundingMode.UP).doubleValue(); // округляем сумму гашения до сотых
+        int i = 1;
+        double sum = 0;
+        double dolg = credit;
+        double pereplata;
+        System.out.println("Аннуитетный метод расчета с ежемесячной суммой оплаты " + payinmonth);
+        while (credit > 0 && (credit - gashenie) > 0 && i < 600) {
+            System.out.println("Месяц " + i + ", Остаток: " + credit + ", Процент: " + percinmonth + ", Гашение: " + gashenie + ", Сумма / мес: " + payinmonth);
+            i++;
+            credit = credit - gashenie;
+            credit = new BigDecimal(credit).setScale(2, RoundingMode.UP).doubleValue(); //округляем задолженность до сотых
+            percinmonth = credit / 100 * yearpercent / 12;
+            percinmonth = new BigDecimal(percinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячный процент до сотых
+            gashenie = payinmonth - percinmonth;
+            gashenie = new BigDecimal(gashenie).setScale(2, RoundingMode.UP).doubleValue(); // округляем сумму гашения до сотых
+            sum = sum + payinmonth;
+            sum = new BigDecimal(sum).setScale(2, RoundingMode.UP).doubleValue(); //округляем общую сумму уплаченных денег до сотых
+        }
+        if (credit < payinmonth || i == 600) { //последний месяц в расчетах
+            percinmonth = credit / 100 * yearpercent / 12;
+            percinmonth = new BigDecimal(percinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячный процент до сотых
+            gashenie = credit;
+            gashenie = new BigDecimal(gashenie).setScale(2, RoundingMode.UP).doubleValue(); // округляем сумму гашения до сотых
+            payinmonth = gashenie + percinmonth;
+            payinmonth = new BigDecimal(payinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячную оплату до сотых
+            sum = sum + payinmonth;
+            sum = new BigDecimal(sum).setScale(2, RoundingMode.UP).doubleValue(); //округляем общую сумму уплаченных денег до сотых
+            pereplata = sum - dolg;
+            pereplata = new BigDecimal(pereplata).setScale(2,RoundingMode.UP).doubleValue(); // округляем переплату до сотых
+            System.out.println("Месяц " + i + ", Остаток: " + credit + ", Процент: " + percinmonth + ", Гашение: "+ gashenie + ", Сумма / мес: " + payinmonth);
+            System.out.println("Итого: " + sum + ", Переплата: "+ pereplata);}
+    }
+    private static void AnnuitetMethodPay (double credit, double yearpercent, int months){
+        credit = new BigDecimal(credit).setScale(2, RoundingMode.UP).doubleValue(); //округляем задолженность до сотых
+        yearpercent = new BigDecimal(yearpercent).setScale(2, RoundingMode.UP).doubleValue(); //округляем годовой процент до сотых
+        double ps = yearpercent/12/100; //процентная ставка по кредиту в перерасчете на месяц (т.е. деленная на 12 и возведенная в процент, т.е. деленая еще и на 100) (У%/12/100)
+        double b = 1 + ps; //нужна чтобы возвести ее в степень кол-ва месяцев
+        double k = (ps*Math.pow(b, months))/(Math.pow(b, months)-1); //вычисляем коэффициент аннуитета
+        double payinmonth = k * credit; //ежемесячная оплата = коэффициент аннуитета * сумму кредита
+        payinmonth = new BigDecimal(payinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячную оплату до сотых
+        double sum = payinmonth * months;
+        sum = new BigDecimal(sum).setScale(2, RoundingMode.UP).doubleValue(); //округляем общую сумму уплаченных денег до сотых
+        double pereplata = sum - credit;
+        pereplata = new BigDecimal(pereplata).setScale(2,RoundingMode.UP).doubleValue(); // округляем переплату до сотых
+        System.out.println("Аннуитетный метод расчета со сроком оплаты " + months + " мес.");
+        System.out.println("Сумма кредита: " + credit + ", Сумма / мес: " + payinmonth + ", Итого: " + sum + ", Переплата: " + pereplata);
+        //дальше выводим график платежей
+        double percinmonth = credit / 100 * yearpercent / 12;
+        percinmonth = new BigDecimal(percinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячный процент до сотых
+        double gashenie = payinmonth - percinmonth;
+        gashenie = new BigDecimal(gashenie).setScale(2, RoundingMode.UP).doubleValue(); // округляем сумму гашения до сотых
+        double dolg = credit;
+        sum = 0;
+        int i = 1;
+        while (credit > 0 && (credit - gashenie) > 0 && i < 600) {
+            System.out.println("Месяц " + i + ", Остаток: " + credit + ", Процент: " + percinmonth + ", Гашение: " + gashenie + ", Сумма / мес: " + payinmonth);
+            i++;
+            credit = credit - gashenie;
+            credit = new BigDecimal(credit).setScale(2, RoundingMode.UP).doubleValue(); //округляем задолженность до сотых
+            percinmonth = credit / 100 * yearpercent / 12;
+            percinmonth = new BigDecimal(percinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячный процент до сотых
+            gashenie = payinmonth - percinmonth;
+            gashenie = new BigDecimal(gashenie).setScale(2, RoundingMode.UP).doubleValue(); // округляем сумму гашения до сотых
+            sum = sum + payinmonth;
+            sum = new BigDecimal(sum).setScale(2, RoundingMode.UP).doubleValue(); //округляем общую сумму уплаченных денег до сотых
+        }
+        if (credit < payinmonth || i == 600) { //последний месяц в расчетах
+            percinmonth = credit / 100 * yearpercent / 12;
+            percinmonth = new BigDecimal(percinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячный процент до сотых
+            gashenie = credit;
+            gashenie = new BigDecimal(gashenie).setScale(2, RoundingMode.UP).doubleValue(); // округляем сумму гашения до сотых
+            payinmonth = gashenie + percinmonth;
+            payinmonth = new BigDecimal(payinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячную оплату до сотых
+            sum = sum + payinmonth;
+            sum = new BigDecimal(sum).setScale(2, RoundingMode.UP).doubleValue(); //округляем общую сумму уплаченных денег до сотых
+            pereplata = sum - dolg;
+            pereplata = new BigDecimal(pereplata).setScale(2,RoundingMode.UP).doubleValue(); // округляем переплату до сотых
+            System.out.println("Месяц " + i + ", Остаток: " + credit + ", Процент: " + percinmonth + ", Гашение: "+ gashenie + ", Сумма / мес: " + payinmonth);
+            System.out.println("Итого: " + sum + ", Переплата: "+ pereplata);}
+    }
+
+    private static void AnnuitetMethodYearpercent(double credit, int months, double payinmonth) {
+
+    }
+    private static void AnnuitetMethodCredit(double yearpercent, int months, double payinmonth) {
+
+    }
+
+    private static void BesprocentnyMethodPay (double credit, int months){
+        credit = new BigDecimal(credit).setScale(2, RoundingMode.UP).doubleValue(); //округляем задолженность до сотых
+        double payinmonth = credit / months;
+        payinmonth = new BigDecimal(payinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячную оплату до сотых
+        System.out.println("Беспроцентный метод расчета со сроком оплаты " + months + " мес.");
+        double dolg = credit;
+        int i = 1;
+        while (credit > 0 && (credit - payinmonth) > 0 && i < 600) {
+            System.out.println("Месяц " + i + ", Остаток: " + credit + ", Сумма / мес: " + payinmonth);
+            i++;
+            credit = credit - payinmonth;
+            credit = new BigDecimal(credit).setScale(2, RoundingMode.UP).doubleValue(); //округляем задолженность до сотых
+        }
+        if (credit < payinmonth || i == 600) { //последний месяц в расчетах
+            payinmonth = credit;
+            payinmonth = new BigDecimal(payinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячную оплату до сотых
+            System.out.println("Месяц " + i + ", Остаток: " + credit + ", Сумма / мес: " + payinmonth);
+            System.out.println("Итого: " + dolg + ", Переплата: " + 0);
+        }
+
+    }
+    private static void BesprocentnyMethodTime (double credit, double payinmonth){
+        credit = new BigDecimal(credit).setScale(2, RoundingMode.UP).doubleValue(); //округляем задолженность до сотых
+        payinmonth = new BigDecimal(payinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячную оплату до сотых
+        double dolg = credit;
+        System.out.println("Беспроцентный метод расчета с ежемесячной суммой оплаты " + payinmonth);
+        int i = 1;
+        while (credit > 0 && (credit - payinmonth) > 0 && i < 600) {
+            System.out.println("Месяц " + i + ", Остаток: " + credit + ", Сумма / мес: " + payinmonth);
+            i++;
+            credit = credit - payinmonth;
+            credit = new BigDecimal(credit).setScale(2, RoundingMode.UP).doubleValue(); //округляем задолженность до сотых
+        }
+        if (credit < payinmonth || i == 600) { //последний месяц в расчетах
+            payinmonth = credit;
+            payinmonth = new BigDecimal(payinmonth).setScale(2, RoundingMode.UP).doubleValue(); //округляем ежемесячную оплату до сотых
+            System.out.println("Месяц " + i + ", Остаток: " + credit + ", Сумма / мес: " + payinmonth);
+            System.out.println("Итого: " + dolg + ", Переплата: " + 0);
+        }
+    }
+}
